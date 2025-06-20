@@ -1,0 +1,80 @@
+body {
+  background-color: #FFFFFF;
+  background-image: 
+    linear-gradient(#E5E5E5 1px, transparent 1px),
+    linear-gradient(90deg, #E5E5E5 1px, transparent 1px);
+  background-size: 28px 28px;
+  background-position: center;
+  margin: 0;
+  min-height: 100vh;
+}
+
+.logo{
+  margin: 5px;
+}
+
+.header {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.header h1{
+  display: inline-block;
+  text-align: center;
+  font-size: 2em;
+  color: #333333;
+}
+
+.card input,
+.card button{
+  background-color: #FFFFFF;
+  text-align: center;
+  width: 4em;
+  height: 1.5em;
+  font-size: 1em;
+  border: none;
+}
+
+.card button:hover{
+  background-color: #333333;
+  color: #FFFFFF; 
+}
+
+.card button:active{
+  background-color: #FFFFFF;
+  color: #333333;
+  border: #333333 2px solid;
+}
+
+.card input:hover{
+  border-bottom: #333333 2px solid;
+}
+
+.card input:focus{
+  outline: none;
+  border-bottom: #333333 2px solid;
+}
+
+.card {
+  font-size: 1.2em;
+  color: #333333;
+  box-sizing: border-box;
+  padding: 15px;
+  width: 100%;
+  height: 100%;;
+  background-color: #FFFFFF;
+  border-radius: 10px;
+  border:#888888 2px solid;
+}
+
+.main{
+  height: auto;
+  width: 400px;
+  position: fixed;
+
+  top: 50vh;
+  transform: translateY(-50%);
+  left: calc(50vw - 200px);
+}

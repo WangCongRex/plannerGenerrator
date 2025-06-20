@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planner Generrator</title>
+    <script src="js/jspdf.umd.min.js"></script>
+    <script src="js/GenMono-normal.js"></script>
+    <script src="js/GenMono-bold.js"></script>
+
+    <script>
+        /**
+         * 绘制基础灰色格子
+         * @param {*} doc jspdf文档
+         **/
+        function baseGrid(doc){
+            doc.setDrawColor("0.75");
+
+            for(i=7; i<210; i+=7){
+                doc.line(0, i, 297, i, "S");
+            }
+
+            for(i=1.5; i<297; i+=7){
+                doc.line(i, 0, i, 210, "S");
+            }
+        }
+
+        /**
+         * @param {*} doc  jspdf文档
+         * @param {number} [x=1] 框架起始位置（距离左页边几个格子）
+         * @param {number} [width=18] 框架宽度(格子)
+         * */
+        function drawFrame( doc, x=1, width=40){
+            var x1 = x * 7 + 1.5;
+            var y1 = 14;
+            var p2 = [0, -3.5, 3.5, -7, 7, -7];
+            var p3 = [(width-2) * 7, 0];
+            var p4 = [3.5, 0, 7, 3.5, 7, 7];
+            var p5 = [0, 182];
+            var p6 = [0, 3.5, -3.5, 7, -7, 7]
+            var  p7 = [(width-2) * -7, 0];
+            var p8 = [-3.5, 0, -7, -3.5, -7, -7]
+
+            doc.setDrawColor("0");
+            doc.setLineDashPattern();
+            doc.lines([p2, p3, p4, p5, p6, p7, p8], x1, y1, [1, 1], "S", true);
+        }
+
+        function addMonthlyPlannerPage(year, month, doc){
+            //星期缩写
+            var dayName=["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
+            //本月日期对象（本月1日）
+            var theDate = new Date(year, month-1, 1)
+            //本月1日星期数（周日为0）
+            var dayOf1st = theDate.getDay();
+            //本月天数
+            var daysNumber = new Date(year, month, 0).getDate();
+            //本月日历是否是六行
+            //判断标准：
+            //如果1日是周六或周日，且本月30天
+            //如果1日是周日，且本月31天
+            var is6Rows = (dayOf1st === 0 && daysNumber >= 30) || ((dayOf1st===0 || dayOf1st ===6) && daysNumber ===31);
+            //月历每行高度（mm）
+            var rowHeight = is6Rows ? 28 : 35;
+            //月历行数
+            var rowNumber = is6Rows ? 6 : 5;
+            //月历标题行高度
+            var titleHeight = 189 - rowHeight * rowNumber;
+            //本月英文名称
+            var monthName = (theDate.toLocaleString('zh-CN', { month: 'long' })).toUpperCase(); 
+            
+            
+            //绘制底层灰色格子
+            // baseGrid(doc);
+            //绘制圆角矩形外框
+            // drawFrame(doc, 2, 18);
+            // drawFrame(doc, 22, 18);
+            doc.setFillColor("0.75");
+            doc.rect(141.5, (month-1)*12+9, 10.5, 12, "F");
+
+             //填写月封面-年
+            doc.setFontSize(20);
+            doc.setFont("GenMono", "bold");
+            doc.text(year, 134.5, 17.5, {align: "right", baseline:"middle"} );
+
+            //填写月份面-月名
+            doc.setFontSize(42);
+            doc.setFont("GenMono", "bold");
+            doc.text(monthName, 134.5, 28, {align: "right", baseline:"middle"} );
+
+            //填写星期缩写
+            var dayNameShort = ["M", "T", "W", "T", "F", "S", "S"];
+            dx = 89;
+            dy = 38.5;
+            doc.setFontSize(12);
+            doc.setFont("GenMono", "bold");
+            for(i=0; i<7; i++){
+                doc.text(dayNameShort[i], dx, dy, {align: "center", baseline:"middle"} );
+                dx = dx + 7;
+            }
+
+            //填写日期
+            doc.setFont("GenMono", "normal");
+            dx = (theDate.getDay() - 1) * 7 +89;
+            if(dx < 89){
+                dx = 131;
+            }
+            dy = 45.5;
+            
+            for(i=1; i<=daysNumber; i++){
+                doc.text(i.toString(), dx, dy, {align: "center", baseline:"middle"} );
+                if((new Date(year, month-1, i)).getDay() === 0){
+                    dx = 89;
+                    dy = dy + 7;
+                } else{
+                    dx = dx + 7;
+                }
+            }
+
+            
+
+            //打卡页日期
+
+            doc.setFillColor("0.75");
+            
+            for(i=3; i<28; i=i+2){
+                doc.rect(152, i*7, 126, 7, "F");
+            }
+
+            drawFrame(doc, 21.5, 18);
+            doc.line(152, 14, 278, 14);
+
+            doc.setFontSize(12);
+            doc.setFont("GenMono", "bold");
+            doc.text("Monthly Tracker", 218.5, 10.5, {align: "center", baseline:"middle"} );
+            
+            dayNameShort = ["S", "M", "T", "W", "T", "F", "S"];
+            doc.setFontSize(6);
+            doc.setFont("GenMono", "bold");
+            dx = 167.75;
+            doc.line((dx-1.75), 14, (dx-1.75), 203);
+            for(i=1; i<=daysNumber; i++){
+                doc.text(i.toString(), dx, 17.5, {align: "center", baseline:"bottom"} );
+                doc.text(dayNameShort[(new Date(year, month-1, i)).getDay()], dx, 17.5, {align: "center", baseline:"top"} );
+                doc.line((dx+1.75), 14, (dx+1.75), 203);
+                dx = dx + 3.5;
+            }
+
+            //新增一页
+            doc.addPage("A4","l");
+
+            //绘制底层灰色格子
+            baseGrid(doc);
+            //绘制圆角矩形外框
+            drawFrame(doc, 4, 35);
+            
+            //填写月历标题
+            doc.setFontSize(42);
+            doc.setFont("GenMono", "bold");
+            doc.text(monthName + " " + year, 36.5, 7+(titleHeight/2), {align: "left", baseline:"middle"} );
+            doc.line(29.5, 7+titleHeight, 274.5, 7+titleHeight)
+            
+            //填写星期行以及月历竖线
+            doc.setFontSize(20);
+            doc.setFont("GenMono", "bold");
+            doc.text(dayName[0], 47, 10.5+titleHeight, {align: "center", baseline:"middle"} );
+            for(i=1; i<=6; i++){
+                let x = 29.5 + 35 * i;
+                doc.line(x, 7+titleHeight, x, 203);
+                doc.text(dayName[i], x+17.5, 10.5+titleHeight, {align: "center", baseline:"middle"} );
+            }
+
+            //绘制月历横线
+            doc.line(29.5, 14+titleHeight, 274.5, 14+titleHeight);
+            for(i=1; i<rowNumber; i++){
+                let y = 14 + i * rowHeight + titleHeight;
+                doc.line(29.5, y, 274.5, y);
+            }
+
+            //填写日期
+            doc.setFontSize(12);
+            doc.setFont("GenMono", "normal");
+            var dx = (theDate.getDay() - 1) * 35 +33;
+            if(dx < 33){
+                dx = 243;
+            }
+            var dy = 17.5 + titleHeight;
+            
+            for(i=1; i<=daysNumber; i++){
+                doc.text(i.toString(), dx, dy, {align: "center", baseline:"middle"} );
+                if((new Date(year, month-1, i)).getDay() === 0){
+                    dx = 33;
+                    dy = dy + rowHeight;
+                } else{
+                    dx = dx + 35;
+                }
+            }
+            //剪切线
+            doc.line(15.5, 0, 15.5, 210);
+            //折叠线
+            doc.setLineDashPattern([2,3],0);
+            doc.setDrawColor("0.5");
+            doc.line(148.5, 0, 148.5, 7);
+            doc.line(148.5, 203, 148.5, 210);
+
+            
+
+            
+            
+        }
+
+        function addDaylyPlannerPage(year, month, day, doc, dx){
+            // baseGrid(doc);
+            drawFrame(doc, dx, 18);
+            doc.line(64.5+dx*7, 7 , 64.5+dx*7, 203);
+            doc.line(1.5+dx*7, 28, 64.5+dx*7, 28);
+            doc.setFontSize(18);
+            doc.setFont("GenMono", "bold");
+            doc.text(year.toString(), dx*7+7, 24.5, {align: "left", baseline:"middle", angle:90} );
+
+            doc.setFontSize(30);
+            doc.text(day.toString(), dx*7+15.5, 17.5, {align: "center", baseline:"middle"} );
+
+            var date = new Date(year, month-1, day);
+            doc.setFontSize(20);
+            doc.text(date.toLocaleString('zh-CN', { weekday: 'long' }), dx*7+61, 14, {align: "right", baseline:"middle"} );
+
+            doc.setFontSize(20);
+            doc.text(date.toLocaleString('zh-CN', { month: 'long' }), dx*7+61, 21, {align: "right", baseline:"middle"} );
+
+            doc.setFontSize(12);
+            doc.setFont("GenMono", "normal");
+            for(i=0; i<24; i++){
+                doc.text(i.toString(), 5+dx*7, 31.5+i*7, {align: "center", baseline:"middle"} );
+                doc.text("•", 5+dx*7, 35+i*7, {align: "center", baseline:"middle"} );
+            }
+            
+        }
+
+        function addWeeklyPages(year, month, dayOfFirstWeekDay, doc){
+            baseGrid(doc);
+
+            //月份全称
+            doc.setFontSize(18);
+            doc.setFont("GenMono", "bold");
+            doc.text((new Date(year, month-1, 1)).toLocaleString('zh-CN', { month: 'long' }), 134.5, 10.5, {align: "center", baseline:"middle"} );
+
+            //填写星期缩写
+            var dayNameShort = ["M", "T", "W", "T", "F", "S", "S"];
+            var daysNumber = new Date(year, month, 0).getDate();
+            dx = 117;
+            dy = 17.5;
+            doc.setFontSize(12);
+            doc.setFont("GenMono", "bold");
+            for(i=0; i<7; i++){
+                doc.text(dayNameShort[i], dx, dy, {align: "center", baseline:"middle"} );
+                dx = dx + 7;
+            }
+
+            //标注当前星期
+            var weekNumOfMonth = Math.ceil((dayOfFirstWeekDay-1+(new Date(year, month-1, 1)).getDay())/7);
+            doc.setFillColor("0.75");
+            doc.roundedRect(107, 14+7*weekNumOfMonth, 56, 7, 3, 3, "f");
+
+            //填写日期
+            doc.setFont("GenMono", "normal");
+            dx = ((new Date(year, month-1, 1)).getDay() - 1) * 7 +117;
+            if(dx < 117){
+                dx = 159;
+            }
+            dy = 24.5;
+            
+            for(i=1; i<=daysNumber; i++){
+                doc.text(i.toString(), dx, dy, {align: "center", baseline:"middle"} );
+                if((new Date(year, month-1, i)).getDay() === 0){
+                    dx = 117;
+                    dy = dy + 7;
+                } else{
+                    dx = dx + 7;
+                }
+            }
+
+            //计算周数
+            var firstDayOfMonth = new Date(year, month-1, 1);
+            var firstMondayOfYear = new Date(year, 0, 1);
+            firstMondayOfYear.setDate(firstMondayOfYear.getDate()-(firstMondayOfYear.getDay() - 1));
+            var weekNumOfYear = Math.ceil((firstDayOfMonth - firstMondayOfYear)/604800000);
+            var daysNumber = new Date(year, month, 0).getDate();
+            //本月日历是否是六行
+            //判断标准：
+            //如果1日是周六或周日，且本月30天
+            //如果1日是周日，且本月31天
+            var is6Rows = (firstDayOfMonth.getDay() === 0 && daysNumber >= 30) || ((firstDayOfMonth.getDay()===0 || firstDayOfMonth.getDay() ===6) && daysNumber ===31);
+            var rowNumber = is6Rows ? 6 : 5;
+            doc.setFontSize(12);
+            doc.setFont("GenMono", "bold");
+            for(i=0; i<rowNumber; i++){
+                doc.text((weekNumOfYear + i).toString(), 110, 24.5+i*7, {align: "center", baseline:"middle"});
+            }
+
+            doc.setFontSize(12);
+            doc.setFont("GenMono", "bold");
+            doc.text(" Priorities", 99.5, 66.5, {align: "left", baseline:"middle"});
+            doc.text(" To-do List", 169.5, 10.5, {align: "left", baseline:"middle"});
+            //GenMono
+            for(i=0; i<27; i++){
+                doc.text("•", 173, 17.5 + i*7, {align: "center", baseline:"middle"});
+            }
+            doc.text(" Note", 241.5, 10.5, {align: "left", baseline:"middle"});
+
+            
+            
+
+
+            drawFrame(doc, 14, 18);
+            drawFrame(doc, 34, 7);
+            doc.line(85.5, 0, 85.5, 210);
+            doc.line(169.5, 7, 169.5, 203);
+            doc.line(99.5, 63, 169.5, 63);
+
+
+            //新增一页
+            doc.addPage("A4","l");
+            baseGrid(doc);
+
+            var x1 = 8.5;
+            var y1 = 14;
+            var p2 = [0, -3.5, 3.5, -7, 7, -7];
+            var p3 = [49, 0];
+            var p4 = [0, 196];
+            var p5 = [-49, 0];
+            var p6 = [-3.5, 0, -7, -3.5, -7, -7]
+
+            doc.setDrawColor("0");
+            doc.setLineDashPattern();
+            doc.lines([p2, p3, p4, p5, p6], x1, y1, [1, 1], "S", true);
+            
+            for(i=0; i<6; i++){
+                doc.line(8.5, 35+i*28, 64.5, 35+i*28);
+            }
+            
+            var dayNames = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
+            for(i=0; i<7; i++){
+                doc.text(dayNames[i], 15.5, 10.5+i*28, {align: "center", baseline:"middle"});
+            }
+
+            var daysOfThisWeek = [];
+            for(i=0; i<7; i++){                
+                var theDate = new Date(year, month-1, dayOfFirstWeekDay+i);
+                console.log(theDate.getMonth());
+                if(theDate.getMonth().toString() === month){
+                    break;
+                }
+
+                daysOfThisWeek.push(dayOfFirstWeekDay + i);
+
+                if(theDate.getDay()===0){
+                    break;
+                }
+            }
+
+            for(i=0; i<daysOfThisWeek.length; i++){
+                var dy = ((new Date(year, month-1, daysOfThisWeek[0])).getDay() - 1) * 28 + 17.5;
+                if(dy<17.5){
+                    dy = 185.5;
+                }
+                doc.text(daysOfThisWeek[i].toString(), 15.5, dy+i*28, {align: "center", baseline:"middle"});
+            }
+
+            addDaylyPlannerPage(year, month, dayOfFirstWeekDay, doc, 10);
+            if(daysOfThisWeek.length > 1){
+                doc.addPage("A4","l");
+                baseGrid(doc);
+                
+                if(daysOfThisWeek.length >= 5){
+                    addDaylyPlannerPage(year, month, daysOfThisWeek[4], doc, 1);
+                }
+                if(daysOfThisWeek.length >= 2){
+                    addDaylyPlannerPage(year, month, daysOfThisWeek[1], doc, 23);
+                }
+                doc.line(148.5, 0, 148.5, 210);
+
+                doc.addPage("A4","l");
+                baseGrid(doc);
+                if(daysOfThisWeek.length >= 3){
+                    addDaylyPlannerPage(year, month, daysOfThisWeek[2], doc, 1);
+                }
+                if(daysOfThisWeek.length >= 4){
+                    addDaylyPlannerPage(year, month, daysOfThisWeek[3], doc, 23);
+                }
+            }
+
+            if(daysOfThisWeek.length > 5){
+                doc.addPage("A4","l");
+                baseGrid(doc);
+                doc.line(148.5, 0, 148.5, 210);
+                if(daysOfThisWeek.length >= 6){
+                    addDaylyPlannerPage(year, month, daysOfThisWeek[5], doc, 23);
+                }
+                doc.line(148.5, 0, 148.5, 210);
+
+                doc.addPage("A4","l");
+                baseGrid(doc);
+                if(daysOfThisWeek.length === 7){
+                    addDaylyPlannerPage(year, month, daysOfThisWeek[6], doc, 1);
+                }
+
+                
+            }
+            
+            
+        }
+
+
+
+        function makePDF(){
+            const doc = new jspdf.jsPDF({
+                    orientation: 'l',  // 纵向（portrait）
+                    unit: 'mm',
+                    format: 'a4'
+                });
+
+            doc.addFileToVFS('GenMono-normal.ttf', font_GenMono_normal);
+            doc.addFont('GenMono-normal.ttf', 'GenMono', 'normal');
+            
+            doc.addFileToVFS('GenMono-bold.ttf', font_GenMono_blod);
+            doc.addFont('GenMono-bold.ttf', 'GenMono', 'bold');
+
+            console.log(doc.getFontList());
+            var year = document.getElementById("year").value;
+            var month = document.getElementById("month").value;
+            var maxDay = (new Date(year, month, 0)).getDate();
+                
+            addMonthlyPlannerPage(year, month, doc);
+            doc.addPage("A4", "l");
+            addWeeklyPages(year, month, 1, doc);
+            for(d=2; d<=maxDay; d++){
+                if((new Date(year, month-1, d)).getDay()===1){
+                    doc.addPage("A4", "l");
+                    addWeeklyPages(year, month, d, doc);
+                }
+            }
+            doc.save("a4.pdf");
+        }
+
+    </script>
+
+<link rel="stylesheet" href="mysite.css">
+<link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+
+</head>
+<body>
+
+    <div class="main">
+        <div class="header">
+            <img src="icon.png" alt="Logo" class="logo">
+            <h1>Planner Generrator</h1>
+        </div>
+        <div class="card">
+            <button onclick="makePDF()">生成</button>
+            一份
+            <input type="text" id="year" placeholder="Year">
+            年
+            <input type="text" id="month" placeholder="Month">
+            月的A5活页月计划手帐PDF。
+        </div>
+    </div>
+    
+    
+    
+    
+</body>
+
+<script>
+    
+    const now = new Date();
+    document.getElementById("year").value = now.getFullYear();
+    document.getElementById("month").value = now.getMonth()+2;
+
+    
+</script>
+</html>
