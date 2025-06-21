@@ -8,7 +8,7 @@
 
 > 特点：极简设计、无外部依赖、生成速度快
 
-![截图]()
+![截图](https://github.com/WangCongRex/plannerGenerrator/blob/main/image/screenshot.png)
 
 ---
 
