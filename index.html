@@ -6,8 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Planner Generrator</title>
     <script src="js/jspdf.umd.min.js"></script>
-    <script src="js/GenMono-normal.js"></script>
-    <script src="js/GenMono-bold.js"></script>
+    <script src="js/MapleMono-CN-Medium-normal.js"></script>
+    <script src="js/MapleMono-CN-SemiBold-normal.js"></script>
 
     <script>
         /**
@@ -49,7 +49,7 @@
 
         function addMonthlyPlannerPage(year, month, doc){
             //星期缩写
-            var dayName=["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
+            var dayName=["周一", "周二", "周三", "周四", "周五", "周六", "周日"];
             //本月日期对象（本月1日）
             var theDate = new Date(year, month-1, 1)
             //本月1日星期数（周日为0）
@@ -81,27 +81,27 @@
 
              //填写月封面-年
             doc.setFontSize(20);
-            doc.setFont("GenMono", "bold");
+            doc.setFont("MapleMono", "bold");
             doc.text(year, 134.5, 17.5, {align: "right", baseline:"middle"} );
 
             //填写月份面-月名
             doc.setFontSize(42);
-            doc.setFont("GenMono", "bold");
+            doc.setFont("MapleMono", "bold");
             doc.text(monthName, 134.5, 28, {align: "right", baseline:"middle"} );
 
             //填写星期缩写
-            var dayNameShort = ["M", "T", "W", "T", "F", "S", "S"];
+            var dayNameShort = ["一", "二", "三", "四", "五", "六", "日"];
             dx = 89;
             dy = 38.5;
             doc.setFontSize(12);
-            doc.setFont("GenMono", "bold");
+            doc.setFont("MapleMono", "bold");
             for(i=0; i<7; i++){
                 doc.text(dayNameShort[i], dx, dy, {align: "center", baseline:"middle"} );
                 dx = dx + 7;
             }
 
             //填写日期
-            doc.setFont("GenMono", "normal");
+            doc.setFont("MapleMono", "normal");
             dx = (theDate.getDay() - 1) * 7 +89;
             if(dx < 89){
                 dx = 131;
@@ -132,12 +132,12 @@
             doc.line(152, 14, 278, 14);
 
             doc.setFontSize(12);
-            doc.setFont("GenMono", "bold");
-            doc.text("Monthly Tracker", 218.5, 10.5, {align: "center", baseline:"middle"} );
+            doc.setFont("MapleMono", "bold");
+            doc.text("月度记录", 218.5, 10.5, {align: "center", baseline:"middle"} );
             
-            dayNameShort = ["S", "M", "T", "W", "T", "F", "S"];
+            dayNameShort = ["日", "一", "二", "三", "四", "五", "六"];
             doc.setFontSize(6);
-            doc.setFont("GenMono", "bold");
+            doc.setFont("MapleMono", "bold");
             dx = 167.75;
             doc.line((dx-1.75), 14, (dx-1.75), 203);
             for(i=1; i<=daysNumber; i++){
@@ -157,13 +157,13 @@
             
             //填写月历标题
             doc.setFontSize(42);
-            doc.setFont("GenMono", "bold");
+            doc.setFont("MapleMono", "bold");
             doc.text(monthName + " " + year, 36.5, 7+(titleHeight/2), {align: "left", baseline:"middle"} );
             doc.line(29.5, 7+titleHeight, 274.5, 7+titleHeight)
             
             //填写星期行以及月历竖线
             doc.setFontSize(20);
-            doc.setFont("GenMono", "bold");
+            doc.setFont("MapleMono", "bold");
             doc.text(dayName[0], 47, 10.5+titleHeight, {align: "center", baseline:"middle"} );
             for(i=1; i<=6; i++){
                 let x = 29.5 + 35 * i;
@@ -180,7 +180,7 @@
 
             //填写日期
             doc.setFontSize(12);
-            doc.setFont("GenMono", "normal");
+            doc.setFont("MapleMono", "normal");
             var dx = (theDate.getDay() - 1) * 35 +33;
             if(dx < 33){
                 dx = 243;
@@ -216,7 +216,7 @@
             doc.line(64.5+dx*7, 7 , 64.5+dx*7, 203);
             doc.line(1.5+dx*7, 28, 64.5+dx*7, 28);
             doc.setFontSize(18);
-            doc.setFont("GenMono", "bold");
+            doc.setFont("MapleMono", "bold");
             doc.text(year.toString(), dx*7+7, 24.5, {align: "left", baseline:"middle", angle:90} );
 
             doc.setFontSize(30);
@@ -230,7 +230,7 @@
             doc.text(date.toLocaleString('zh-CN', { month: 'long' }), dx*7+61, 21, {align: "right", baseline:"middle"} );
 
             doc.setFontSize(12);
-            doc.setFont("GenMono", "normal");
+            doc.setFont("MapleMono", "normal");
             for(i=0; i<24; i++){
                 doc.text(i.toString(), 5+dx*7, 31.5+i*7, {align: "center", baseline:"middle"} );
                 doc.text("•", 5+dx*7, 35+i*7, {align: "center", baseline:"middle"} );
@@ -238,33 +238,44 @@
             
         }
 
+        /**
+         * 添加每周计划页面
+         * @param {number} year 年份
+         * @param {number} month 月份
+         * @param {number} dayOfFirstWeekDay 本周第一天的日期（首周固定位1日）
+         * @param {*} doc jspdf文档对象
+         **/
         function addWeeklyPages(year, month, dayOfFirstWeekDay, doc){
             baseGrid(doc);
 
             //月份全称
             doc.setFontSize(18);
-            doc.setFont("GenMono", "bold");
+            doc.setFont("MapleMono", "bold");
             doc.text((new Date(year, month-1, 1)).toLocaleString('zh-CN', { month: 'long' }), 134.5, 10.5, {align: "center", baseline:"middle"} );
 
             //填写星期缩写
-            var dayNameShort = ["M", "T", "W", "T", "F", "S", "S"];
+            var dayNameShort = ["一", "二", "三", "四", "五", "六", "日"];
             var daysNumber = new Date(year, month, 0).getDate();
             dx = 117;
             dy = 17.5;
             doc.setFontSize(12);
-            doc.setFont("GenMono", "bold");
+            doc.setFont("MapleMono", "bold");
             for(i=0; i<7; i++){
                 doc.text(dayNameShort[i], dx, dy, {align: "center", baseline:"middle"} );
                 dx = dx + 7;
             }
 
             //标注当前星期
-            var weekNumOfMonth = Math.ceil((dayOfFirstWeekDay-1+(new Date(year, month-1, 1)).getDay())/7);
+            var dayOfFistMonthday=(new Date(year, month-1, 1)).getDay();
+            if(dayOfFistMonthday === 0){
+                dayOfFistMonthday = 7;
+            }
+            var weekNumOfMonth = Math.ceil((dayOfFirstWeekDay-1+dayOfFistMonthday)/7);
             doc.setFillColor("0.75");
             doc.roundedRect(107, 14+7*weekNumOfMonth, 56, 7, 3, 3, "f");
 
             //填写日期
-            doc.setFont("GenMono", "normal");
+            doc.setFont("MapleMono", "normal");
             dx = ((new Date(year, month-1, 1)).getDay() - 1) * 7 +117;
             if(dx < 117){
                 dx = 159;
@@ -294,20 +305,20 @@
             var is6Rows = (firstDayOfMonth.getDay() === 0 && daysNumber >= 30) || ((firstDayOfMonth.getDay()===0 || firstDayOfMonth.getDay() ===6) && daysNumber ===31);
             var rowNumber = is6Rows ? 6 : 5;
             doc.setFontSize(12);
-            doc.setFont("GenMono", "bold");
+            doc.setFont("MapleMono", "bold");
             for(i=0; i<rowNumber; i++){
                 doc.text((weekNumOfYear + i).toString(), 110, 24.5+i*7, {align: "center", baseline:"middle"});
             }
 
             doc.setFontSize(12);
-            doc.setFont("GenMono", "bold");
-            doc.text(" Priorities", 99.5, 66.5, {align: "left", baseline:"middle"});
-            doc.text(" To-do List", 169.5, 10.5, {align: "left", baseline:"middle"});
-            //GenMono
+            doc.setFont("MapleMono", "bold");
+            doc.text(" 优先事项", 99.5, 66.5, {align: "left", baseline:"middle"});
+            doc.text(" 待办列表", 169.5, 10.5, {align: "left", baseline:"middle"});
+            //MapleMono
             for(i=0; i<27; i++){
                 doc.text("•", 173, 17.5 + i*7, {align: "center", baseline:"middle"});
             }
-            doc.text(" Note", 241.5, 10.5, {align: "left", baseline:"middle"});
+            doc.text(" 备注", 241.5, 10.5, {align: "left", baseline:"middle"});
 
             
             
@@ -340,7 +351,7 @@
                 doc.line(8.5, 35+i*28, 64.5, 35+i*28);
             }
             
-            var dayNames = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
+            var dayNames = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"];
             for(i=0; i<7; i++){
                 doc.text(dayNames[i], 15.5, 10.5+i*28, {align: "center", baseline:"middle"});
             }
@@ -421,11 +432,11 @@
                     format: 'a4'
                 });
 
-            doc.addFileToVFS('GenMono-normal.ttf', font_GenMono_normal);
-            doc.addFont('GenMono-normal.ttf', 'GenMono', 'normal');
+            doc.addFileToVFS('MapleMono-CN-Medium-normal.ttf', font_MapleMono_CN_Medium_normal);
+            doc.addFont('MapleMono-CN-Medium-normal.ttf', 'MapleMono', 'normal');
             
-            doc.addFileToVFS('GenMono-bold.ttf', font_GenMono_blod);
-            doc.addFont('GenMono-bold.ttf', 'GenMono', 'bold');
+            doc.addFileToVFS('MapleMono-CN-SemiBold-normal.ttf', font_MapleMono_CN_SemiBold_normal);
+            doc.addFont('MapleMono-CN-SemiBold-normal.ttf', 'MapleMono', 'bold');
 
             console.log(doc.getFontList());
             var year = document.getElementById("year").value;
